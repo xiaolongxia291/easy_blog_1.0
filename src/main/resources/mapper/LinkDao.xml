@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wang.dao.LinkDao">
+
+    <resultMap id="ThisEntity" type="com.wang.entity.Link">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="url" jdbcType="VARCHAR" property="url"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="rank" jdbcType="INTEGER" property="rank"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime"/>
+    </resultMap>
+
+    <select id="getTotal" resultType="int">
+        select count(id) from link
+        where deleted=0
+    </select>
+
+    <select id="getList" resultMap="ThisEntity" parameterType="com.wang.util.PageQuery">
+        select * from link
+        where deleted=0
+        order by id asc
+        <if test="pageQuery.isTotal==null">
+            limit #{pageQuery.start},#{pageQuery.pageSize}
+        </if>
+    </select>
+
+    <update id="delete">
+        update link
+        set deleted=1
+        where id in
+        <foreach item="id" collection="ids"  open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <insert id="add" parameterType="com.wang.entity.Link">
+        insert into link(id, name, url, description, `rank`, deleted, add_time)
+         VALUES (null,#{link.name},#{link.url},#{link.description},#{link.rank},0,now())
+    </insert>
+
+    <update id="update" parameterType="com.wang.entity.Link">
+        update link
+        set name=#{link.name},url=#{link.url},description=#{link.description},`rank`=#{link.rank}
+        where id=#{link.id}
+    </update>
+
+</mapper>

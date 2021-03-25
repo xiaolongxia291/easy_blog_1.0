@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wang.dao.BlogDao">
+
+    <resultMap id="ThisEntity" type="com.wang.entity.Blog">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="img" jdbcType="VARCHAR" property="img"/>
+        <result column="content" jdbcType="LONGVARCHAR" property="content"/>
+        <result column="category_id" jdbcType="INTEGER" property="categoryId"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="views" jdbcType="INTEGER" property="views"/>
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="category_name" jdbcType="VARCHAR" property="categoryName"/>
+    </resultMap>
+
+    <select id="getTotal" resultType="int">
+        select count(id) from blog
+        where deleted=0
+    </select>
+
+    <select id="getList" resultMap="ThisEntity" parameterType="com.wang.util.PageQuery">
+        select * from blog
+        where deleted=0
+#         注意if标签中参数不要再加额外符号，会报错
+        <if test="pageQuery.tagId!=null">
+            and id in(select blog_id from tag_blog where tag_id=#{pageQuery.tagId})
+        </if>
+        <if test="pageQuery.categoryId!=null">
+            and category_id=#{pageQuery.categoryId}
+        </if>
+        <if test="pageQuery.keyword!=null">
+            AND (title like CONCAT('%',#{pageQuery.keyword},'%' )
+                   or category_name like CONCAT('%',#{pageQuery.keyword},'%' ))
+        </if>
+        <if test="pageQuery.published!=null">
+            and status=1
+        </if>
+        order by id asc
+        <if test="pageQuery.isTotal==null">
+            limit #{pageQuery.start},#{pageQuery.pageSize}
+        </if>
+    </select>
+
+    <update id="delete">
+        update blog
+        set deleted=1
+        where id in
+        <foreach item="id" collection="ids"  open="(" separator="," close=")">
+            #{id}
+        </foreach>;
+    </update>
+
+    <select id="getBlog" parameterType="int" resultMap="ThisEntity">
+        select * from blog where id=#{id}
+    </select>
+
+    <insert id="add" parameterType="com.wang.entity.Blog" useGeneratedKeys="true" keyProperty="id">
+        insert into blog(id, title, img, content, category_id, category_name,
+                         status, views, add_time, deleted, update_time, tags)
+        values (null,#{blog.title},#{blog.img},#{blog.content},#{blog.categoryId},#{blog.categoryName},
+                #{blog.status},0,now(),0,now(),#{blog.tags})
+    </insert>
+
+    <update id="update" parameterType="com.wang.entity.Blog">
+        update blog
+        set
+            category_id=#{blog.categoryId},category_name=#{blog.categoryName},
+            img=#{blog.img},title=#{blog.title},tags=#{blog.tags},
+            content=#{blog.content},status=#{blog.status},
+            update_time=now()
+        where id=#{blog.id}
+    </update>
+
+    <select id="getSeveral" parameterType="int" resultMap="ThisEntity">
+        select * from blog where deleted=0 and status=1
+        <if test="newOrHot==0">
+            order by add_time
+        </if>
+        <if test="newOrHot==1">
+            order by views
+        </if>
+        limit 0,5
+    </select>
+
+    <update id="updateViews" parameterType="int">
+        update blog set views=views+1 where id=#{}
+    </update>
+
+</mapper>

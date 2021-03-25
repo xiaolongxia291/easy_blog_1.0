@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wang.dao.RelationDao">
+
+    <resultMap id="ThisEntity" type="com.wang.entity.Relation">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="blog_id" jdbcType="INTEGER" property="blogId"/>
+        <result column="tag_id" jdbcType="INTEGER" property="tagId"/>
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime"/>
+    </resultMap>
+
+    <delete id="deleteByBlogId">
+        delete from tag_blog
+        where blog_id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <insert id="add">
+        insert into tag_blog(id, blog_id, tag_id, add_time)
+        values (null,#{blogId},#{tagId},now())
+    </insert>
+
+    <select id="get" parameterType="com.wang.entity.Relation" resultMap="ThisEntity">
+        select * from tag_blog where
+        <if test="relation.blogId!=null">
+            blog_id=#{relation.blogId}
+        </if>
+        <if test="relation.tagId!=null">
+            and blog_id=#{relation.tagId}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wang.dao.AdminDao">
+
+    <resultMap id="ThisEntity" type="com.wang.entity.Admin">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="nick" jdbcType="VARCHAR" property="nick"/>
+        <result column="img" jdbcType="VARCHAR" property="img"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+    </resultMap>
+
+    <select id="getAdmin" resultMap="ThisEntity" parameterType="com.wang.entity.Admin">
+        select * from admin
+        <if test="admin.name!=null">
+            where name=#{admin.name}
+        </if>
+        <if test="admin.password!=null">
+            and password=#{admin.password}
+        </if>
+    </select>
+
+    <update id="updateAdmin" parameterType="com.wang.entity.Admin">
+        update admin
+        <set>
+            <if test="admin.name!=null">
+                name=#{admin.name},
+            </if>
+            <if test="admin.nick!=null">
+                nick=#{admin.nick},
+            </if>
+            <if test="admin.password!=null">
+                password=#{admin.password},
+            </if>
+            <if test="admin.img!=null">
+                img=#{admin.img},
+            </if>
+            <if test="admin.description!=null">
+                description=#{admin.description},
+            </if>
+        </set>
+        where id=#{admin.id}
+    </update>
+</mapper>

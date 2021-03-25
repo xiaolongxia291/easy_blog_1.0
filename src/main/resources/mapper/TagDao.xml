@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wang.dao.TagDao">
+
+    <resultMap id="ThisEntity" type="com.wang.entity.Tag">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime"/>
+    </resultMap>
+
+    <select id="getTotal" resultType="int">
+        select count(id) from tag
+        where deleted=0
+    </select>
+
+    <select id="getList" resultMap="ThisEntity" parameterType="com.wang.util.PageQuery">
+        select * from tag
+        where deleted=0
+        order by id asc
+        <if test="pageQuery.isTotal==null">
+            limit #{pageQuery.start},#{pageQuery.pageSize}
+        </if>
+    </select>
+
+    <update id="delete">
+        update tag
+        set deleted=1
+        where id in
+        <foreach item="id" collection="ids"  open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and id not in (
+          select distinct tag_id from tag_blog
+        )
+    </update>
+
+    <insert id="add" parameterType="com.wang.entity.Tag" useGeneratedKeys="true"
+    keyProperty="id">
+        insert into tag(id, name, deleted, add_time)
+        values (null,#{tag.name},0,now())
+    </insert>
+
+    <select id="get" resultMap="ThisEntity" parameterType="com.wang.entity.Tag">
+        select * from tag
+        where deleted=0
+        <if test="tag.name!=null">
+            and name=#{tag.name}
+        </if>
+    </select>
+
+    <select id="getHot" resultMap="ThisEntity">
+      select * from tag where id in(
+          select tag_id from tag_blog group by tag_id order by count(blog_id)
+    )
+      limit 0,5
+    </select>
+
+</mapper>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wang.dao.CategoryDao">
+
+    <resultMap id="ThisEntity" type="com.wang.entity.Category">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="img" jdbcType="VARCHAR" property="img"/>
+        <result column="rank" jdbcType="INTEGER" property="rank"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+        <result column="add_time" jdbcType="TIMESTAMP" property="addTime"/>
+    </resultMap>
+
+    <select id="getTotal" resultType="int">
+        select count(id) from category
+        where deleted=0
+    </select>
+
+    <select id="getList" resultMap="ThisEntity" parameterType="com.wang.util.PageQuery">
+        select * from category
+        where deleted=0
+        order by id asc
+        <if test="pageQuery.isTotal==null">
+            limit #{pageQuery.start},#{pageQuery.pageSize}
+        </if>
+    </select>
+
+    <update id="delete">
+        update category
+        set deleted=1
+        where id in
+        <foreach item="id" collection="ids"  open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and id not in(
+          select distinct category_id from blog where blog.deleted=0
+        )
+    </update>
+
+    <insert id="add">
+        insert into category(id, name, img, `rank`, deleted, add_time)
+        values (null,#{name},#{img},0,0,now())
+    </insert>
+
+    <update id="update">
+        update category
+        set name=#{name},img=#{img} where id=#{id}
+    </update>
+
+    <select id="getListNoPage" resultMap="ThisEntity">
+        select * from category where deleted=0
+    </select>
+
+    <select id="get" resultMap="ThisEntity" parameterType="int">
+        select * from category where id =#{id}
+    </select>
+
+    <update id="updateRank" parameterType="int">
+        update category set `rank`=`rank`+1
+        where id=#{id}
+    </update>
+
+</mapper>

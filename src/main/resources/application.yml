@@ -1,0 +1,38 @@
+server:
+  port: 8089
+  servlet:
+    context-path: /easyblog
+
+spring:
+  # 模板引擎
+  thymeleaf:
+    cache: false
+  # 数据库相关
+  datasource:
+    url: jdbc:mysql://localhost:3306/easyblog?serverTimezone=UTC
+    name: my-blog-datasource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: wang1996526
+    # 连接池
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: hikariCP
+      max-lifetime: 300000000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  # 设置文件最大限制
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# mybatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*Dao.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
